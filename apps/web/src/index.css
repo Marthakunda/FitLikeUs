@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   ROOT VARIABLES & BASE STYLES
+   ============================================================================ */
+:root {
+  color-scheme: dark;
+  
+  /* Dark Futuristic Theme */
+  --bg-dark: #0a0a0a;
+  --bg-card: #121212;
+  --bg-border: #1e1e1e;
+  
+  /* Neon Colors */
+  --accent-red: #ff1e1e;
+  --accent-red-dark: #cc1818;
+  --accent-red-light: #ff4444;
+  
+  /* Additional Accents */
+  --accent-emerald: #10b981;
+  --accent-blue: #0ea5e9;
+  --accent-cyan: #06b6d4;
+  --accent-yellow: #fbbf24;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-dark);
+  color: #ffffff;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================================
+   COMPONENT STYLES
+   ============================================================================ */
+@layer components {
+  /* Dark Card Container */
+  .card-dark {
+    @apply bg-neutral-950 rounded-2xl border border-neutral-800 backdrop-blur-xl;
+  }
+
+  /* Glassy Card with Neon Border */
+  .card-glass {
+    @apply bg-white/3 backdrop-blur-lg border border-white/10 rounded-2xl p-6;
+  }
+
+  /* Red Glowing Button Style */
+  .btn-glow-red {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200;
+    @apply bg-neon-red hover:bg-neon-red-light text-white;
+    @apply shadow-glow-red hover:shadow-glow-red-lg;
+    @apply hover:scale-105 active:scale-95;
+  }
+
+  .btn-glow-red-outlined {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200;
+    @apply border border-neon-red bg-transparent text-neon-red;
+    @apply hover:bg-neon-red/10 hover:shadow-glow-red;
+    @apply hover:scale-105 active:scale-95;
+  }
+
+  /* Secondary Button */
+  .btn-secondary {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200;
+    @apply bg-white/5 hover:bg-white/10 text-white border border-white/10;
+    @apply hover:scale-105 active:scale-95;
+  }
+
+  /* Text Input */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg;
+    @apply bg-neutral-900 border border-neutral-800 text-white;
+    @apply placeholder-neutral-500;
+    @apply focus:outline-none focus:border-neon-red focus:ring-1 focus:ring-neon-red/50;
+    @apply transition-all duration-200;
+  }
+
+  /* Gradient Text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r;
+  }
+
+  /* Smooth Animations */
+  .animate-smooth-in {
+    @apply animate-fade-in;
+  }
+
+  .animate-smooth-up {
+    @apply animate-slide-up;
+  }
+
+  .animate-micro {
+    animation: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+.glow-red {
+  box-shadow: 0 0 20px rgba(255, 30, 30, 0.5);
+}
+
+.glow-red-lg {
+  box-shadow: 0 0 30px rgba(255, 30, 30, 0.6);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+}
+
+.backdrop-dark {
+  backdrop-filter: blur(20px);
+}
+
+/* ============================================================================
+   SCROLLBAR STYLING
+   ============================================================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 30, 30, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 30, 30, 0.5);
+}
