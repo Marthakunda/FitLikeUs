@@ -55,32 +55,95 @@ export const useWorkout = (userId: string) => {
   };
 
   /**
-   * Log a new workout
+   * Log a new workout with optimistic updates
    */
   const logWorkoutMutation = useMutation({
     mutationFn: async (workoutData: Omit<Workout, 'userId' | 'timestamp' | 'id'>) => {
-      const payload = {
-        userId,
-        ...workoutData,
-        timestamp: serverTimestamp(),
-      };
-      const docRef = await addDoc(collection(db, 'workouts'), payload);
-      return docRef.id;
+      try {
+        const payload = {
+          userId,
+          ...workoutData,
+          timestamp: serverTimestamp(),
+        };
+        const docRef = await addDoc(collection(db, 'workouts'), payload);
+        
+        if (!docRef.id) {
+          throw new Error('Failed to create workout record');
+        }
+        
+        console.log('✅ Workout saved:', docRef.id);
+        return docRef.id;
+      } catch (error) {
+        console.error('❌ Failed to log workout:', error);
+        throw error;
+      }
+    },
+    onMutate: async (newWorkoutData) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['workouts', userId] });
+
+      // Snapshot the previous value
+      const previousWorkouts = queryClient.getQueryData(['workouts', userId]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['workouts', userId], (old: any[] = []) => [
+        {
+          id: `temp-${Date.now()}`,
+          ...newWorkoutData,
+          userId,
+          timestamp: new Date(),
+        },
+        ...old,
+      ]);
+
+      return { previousWorkouts };
     },
     onSuccess: () => {
+      // Invalidate to refetch and ensure consistency
       queryClient.invalidateQueries({ queryKey: ['workouts', userId] });
+    },
+    onError: (_, __, context: any) => {
+      // Revert to previous state on error
+      if (context?.previousWorkouts) {
+        queryClient.setQueryData(['workouts', userId], context.previousWorkouts);
+      }
     },
   });
 
   /**
-   * Delete a workout
+   * Delete a workout with optimistic updates
    */
   const deleteWorkoutMutation = useMutation({
     mutationFn: async (workoutId: string) => {
-      await deleteDoc(doc(db, 'workouts', workoutId));
+      try {
+        await deleteDoc(doc(db, 'workouts', workoutId));
+        console.log('✅ Workout deleted:', workoutId);
+      } catch (error) {
+        console.error('❌ Failed to delete workout:', error);
+        throw error;
+      }
+    },
+    onMutate: async (deletedWorkoutId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['workouts', userId] });
+
+      // Snapshot previous value
+      const previousWorkouts = queryClient.getQueryData(['workouts', userId]);
+
+      // Optimistically remove the workout
+      queryClient.setQueryData(['workouts', userId], (old: any[] = []) =>
+        old.filter((w) => w.id !== deletedWorkoutId)
+      );
+
+      return { previousWorkouts };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts', userId] });
+    },
+    onError: (_, __, context: any) => {
+      if (context?.previousWorkouts) {
+        queryClient.setQueryData(['workouts', userId], context.previousWorkouts);
+      }
     },
   });
 
