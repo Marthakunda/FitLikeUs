@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/Login';
 import SignUpPage from './pages/SignUp';
+import ForgotPasswordPage from './pages/ForgotPassword';
+import ResetPasswordPage from './pages/ResetPassword';
 import LandingPage from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -16,7 +18,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center text-white">
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center text-white">
         <div className="space-y-4 text-center">
           <div className="w-12 h-12 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
           <p>Loading...</p>
@@ -33,6 +35,8 @@ function App() {
         <Route path="/" element={profile ? <Navigate to={profile.role === 'admin' ? '/admin/dashboard' : '/dashboard'} /> : <LandingPage />} />
         <Route path="/login" element={profile ? <Navigate to={profile.role === 'admin' ? '/admin/dashboard' : '/dashboard'} /> : <LoginPage />} />
         <Route path="/signup" element={profile ? <Navigate to={profile.role === 'admin' ? '/admin/dashboard' : '/dashboard'} /> : <SignUpPage />} />
+        <Route path="/forgot-password" element={profile ? <Navigate to={profile.role === 'admin' ? '/admin/dashboard' : '/dashboard'} /> : <ForgotPasswordPage />} />
+        <Route path="/reset-password" element={profile ? <Navigate to={profile.role === 'admin' ? '/admin/dashboard' : '/dashboard'} /> : <ResetPasswordPage />} />
 
         {/* Protected Routes */}
         <Route

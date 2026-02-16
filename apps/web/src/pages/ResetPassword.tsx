@@ -1,60 +1,75 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../services/auth';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 import PasswordValidator from '../components/PasswordValidator';
-import { validatePassword } from '../lib/errorHandling';
+import { validatePasswordMatch } from '../lib/errorHandling';
 
-// Extended schema for signup
-const SignUpSchema = z.object({
-  email: z.string().email('Invalid email address'),
+const ResetPasswordSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string().min(8, 'Confirm password is required'),
-}).refine((data) => data.password === data.confirmPassword, {
+}).refine((data) => validatePasswordMatch(data.password, data.confirmPassword), {
   message: "Passwords don't match",
   path: ["confirmPassword"],
-}).refine((data) => {
-  const validation = validatePassword(data.password);
-  return validation.isValid;
-}, {
-  message: "Password does not meet requirements",
-  path: ["password"],
 });
 
-type SignUpInput = z.infer<typeof SignUpSchema>;
+type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 
-export default function SignUpPage() {
+export default function ResetPasswordPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [step, setStep] = useState<'form' | 'success' | 'error'>('form');
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<'form' | 'success'>('form');
+  const [resetCode] = useState(searchParams.get('oobCode') || '');
   const [password, setPassword] = useState('');
 
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<SignUpInput>({
-    resolver: zodResolver(SignUpSchema),
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<ResetPasswordInput>({
+    resolver: zodResolver(ResetPasswordSchema),
   });
 
   const passwordValue = watch('password');
 
+  // Verify reset code on mount
+  useEffect(() => {
+    if (!resetCode) {
+      setStep('error');
+      setError('Invalid reset link. Please request a new password reset.');
+      return;
+    }
+
+    // Verify the code is valid
+    const verifyCode = async () => {
+      try {
+        await authService.verifyResetCode(resetCode);
+      } catch (err: any) {
+        setStep('error');
+        setError(err.message || 'Invalid or expired reset link.');
+      }
+    };
+
+    verifyCode();
+  }, [resetCode]);
+
   const mutation = useMutation({
-    mutationFn: (data: SignUpInput) => 
-      authService.register({ email: data.email, password: data.password, role: 'client' }),
+    mutationFn: (data: ResetPasswordInput) =>
+      authService.resetPassword(resetCode, data.password),
     onSuccess: () => {
       setStep('success');
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+        navigate('/login');
+      }, 3000);
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to create account');
+      setError(err.message || 'Failed to reset password');
     }
   });
 
-  const onSubmit = (data: SignUpInput) => {
+  const onSubmit = (data: ResetPasswordInput) => {
     setError(null);
     mutation.mutate(data);
   };
@@ -75,7 +90,7 @@ export default function SignUpPage() {
         className="w-full max-w-md relative z-10"
       >
         <AnimatePresence mode="wait">
-          {step === 'form' ? (
+          {step === 'form' && resetCode ? (
             <motion.div
               key="form"
               initial={{ opacity: 0, y: 20 }}
@@ -94,13 +109,14 @@ export default function SignUpPage() {
                 </button>
                 <div>
                   <h2 className="text-2xl font-bold text-white">
-                    Create Account
+                    Create New Password
                   </h2>
-                  <p className="text-sm text-slate-400">Start your fitness journey today</p>
+                  <p className="text-sm text-slate-400">Secure your account with a strong password</p>
                 </div>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* Error Alert */}
                 <AnimatePresence mode="wait">
                   {error && (
                     <motion.div
@@ -108,7 +124,7 @@ export default function SignUpPage() {
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="bg-brand-warning/10 border border-brand-warning/50 text-brand-warning/90 p-3 rounded-lg text-sm"
+                      className="bg-brand-warning/10 border border-brand-warning/50 text-brand-warning p-3 rounded-lg text-sm"
                     >
                       {error}
                     </motion.div>
@@ -116,29 +132,13 @@ export default function SignUpPage() {
                 </AnimatePresence>
 
                 <div className="space-y-4">
-                  {/* Email Field */}
+                  {/* New Password Field */}
                   <div>
-                    <label htmlFor="signup-email" className="block text-sm font-medium text-slate-300 mb-2">
-                      Email Address
+                    <label htmlFor="new-password" className="block text-sm font-medium text-slate-300 mb-2">
+                      New Password
                     </label>
                     <input
-                      id="signup-email"
-                      {...register('email')}
-                      type="email"
-                      disabled={mutation.isPending}
-                      className="input-field"
-                      placeholder="name@example.com"
-                    />
-                    {errors.email && <p className="text-brand-warning text-xs mt-1.5">{errors.email.message}</p>}
-                  </div>
-
-                  {/* Password Field */}
-                  <div>
-                    <label htmlFor="signup-password" className="block text-sm font-medium text-slate-300 mb-2">
-                      Password
-                    </label>
-                    <input
-                      id="signup-password"
+                      id="new-password"
                       {...register('password')}
                       type="password"
                       disabled={mutation.isPending}
@@ -149,37 +149,40 @@ export default function SignUpPage() {
                         register('password').onChange?.(e);
                       }}
                     />
-                    {errors.password && <p className="text-brand-warning text-xs mt-1.5">{errors.password.message}</p>}
+                    {errors.password && (
+                      <p className="text-brand-warning text-xs mt-1.5">{errors.password.message}</p>
+                    )}
                     
-                    {/* Password Validator - Shows requirements */}
+                    {/* Password Validator */}
                     <PasswordValidator password={passwordValue} showGuidelines={true} />
                   </div>
 
                   {/* Confirm Password Field */}
                   <div>
-                    <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-300 mb-2">
+                    <label htmlFor="confirm-new-password" className="block text-sm font-medium text-slate-300 mb-2">
                       Confirm Password
                     </label>
                     <input
-                      id="confirm-password"
+                      id="confirm-new-password"
                       {...register('confirmPassword')}
                       type="password"
                       disabled={mutation.isPending}
                       className="input-field"
-                      placeholder="Confirm your password"
+                      placeholder="Confirm your new password"
                     />
-                    {errors.confirmPassword && <p className="text-brand-warning text-xs mt-1.5">{errors.confirmPassword.message}</p>}
+                    {errors.confirmPassword && (
+                      <p className="text-brand-warning text-xs mt-1.5">{errors.confirmPassword.message}</p>
+                    )}
                   </div>
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-brand-primary/10 border border-brand-primary/30 rounded-lg p-4 text-sm text-slate-300">
-                  <p className="mb-2 font-semibold text-brand-primary-light">What you'll get:</p>
+                <div className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-4 text-sm text-slate-400">
+                  <p className="font-medium text-slate-300 mb-2">Password Tips:</p>
                   <ul className="space-y-1 text-xs">
-                    <li>✓ Free access to workout logging</li>
-                    <li>✓ Mood tracking integration</li>
-                    <li>✓ Offline support</li>
-                    <li>✓ Upgrade to Premium anytime</li>
+                    <li>✓ Use a unique password you don't use elsewhere</li>
+                    <li>✓ Mix uppercase, lowercase, numbers, and symbols</li>
+                    <li>✓ Avoid personal information like birthdate</li>
                   </ul>
                 </div>
 
@@ -194,22 +197,15 @@ export default function SignUpPage() {
                   {mutation.isPending ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    'Create Account'
+                    <>
+                      <Lock className="w-5 h-5" />
+                      Reset Password
+                    </>
                   )}
                 </motion.button>
-
-                {/* Login Link */}
-                <div className="text-center pt-4 border-t border-white/5">
-                  <p className="text-sm text-slate-400">
-                    Already have an account?{' '}
-                    <Link to="/login" className="text-brand-primary font-semibold hover:text-brand-primary-light transition-colors">
-                      Sign In
-                    </Link>
-                  </p>
-                </div>
               </form>
             </motion.div>
-          ) : (
+          ) : step === 'success' ? (
             <motion.div
               key="success"
               initial={{ opacity: 0, y: 20 }}
@@ -223,18 +219,56 @@ export default function SignUpPage() {
               >
                 <CheckCircle className="w-16 h-16 text-brand-accent mx-auto mb-4" />
               </motion.div>
-              
+
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold text-white">
-                  Account Created!
+                  Password Reset!
                 </h2>
                 <p className="text-slate-400">
-                  Welcome to FitLikeUs! Get ready to transform your fitness.
+                  Your password has been successfully updated.
                 </p>
               </div>
 
               <div className="pt-4 text-sm text-slate-500">
-                Redirecting to dashboard...
+                Redirecting to login...
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8 bg-white/3 backdrop-blur-xl p-12 rounded-2xl border border-white/10 text-center"
+            >
+              <div className="text-5xl">⚠️</div>
+
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-white">
+                  Invalid Reset Link
+                </h2>
+                <p className="text-slate-400">
+                  {error || 'The password reset link is invalid or has expired.'}
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-6">
+                <motion.button
+                  onClick={() => navigate('/forgot-password')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="btn-glow-primary w-full"
+                >
+                  Request New Reset Link
+                </motion.button>
+                <motion.button
+                  onClick={() => navigate('/login')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="btn-secondary w-full"
+                >
+                  Back to Sign In
+                </motion.button>
               </div>
             </motion.div>
           )}

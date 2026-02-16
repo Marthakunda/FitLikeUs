@@ -8,21 +8,25 @@
 :root {
   color-scheme: dark;
   
-  /* Dark Futuristic Theme */
-  --bg-dark: #0a0a0a;
-  --bg-card: #121212;
-  --bg-border: #1e1e1e;
+  /* Modern Dark Theme */
+  --bg-dark: #0f1419;
+  --bg-card: #1a202d;
+  --bg-border: #2d3748;
   
-  /* Neon Colors */
-  --accent-red: #ff1e1e;
-  --accent-red-dark: #cc1818;
-  --accent-red-light: #ff4444;
+  /* Brand Primary Color - Navy/Blue */
+  --brand-primary: #2563eb;
+  --brand-primary-dark: #1e40af;
+  --brand-primary-light: #3b82f6;
   
-  /* Additional Accents */
-  --accent-emerald: #10b981;
-  --accent-blue: #0ea5e9;
-  --accent-cyan: #06b6d4;
-  --accent-yellow: #fbbf24;
+  /* Brand Secondary & Support Colors */
+  --brand-secondary: #64748b;
+  --brand-accent: #10b981;
+  --brand-warning: #f59e0b;
+  
+  /* Neutral Colors */
+  --text-primary: #f1f5f9;
+  --text-muted: #cbd5e1;
+  --bg-hover: #334155;
 }
 
 html {
@@ -60,24 +64,33 @@ body {
     @apply bg-white/3 backdrop-blur-lg border border-white/10 rounded-2xl p-6;
   }
 
-  /* Red Glowing Button Style */
-  .btn-glow-red {
-    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200;
-    @apply bg-neon-red hover:bg-neon-red-light text-white;
-    @apply shadow-glow-red hover:shadow-glow-red-lg;
+  /* Primary Button - Brand Blue */
+  .btn-glow-primary {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200;
+    @apply bg-brand-primary hover:bg-brand-primary-light text-white;
+    @apply shadow-glow-primary hover:shadow-glow-primary-lg;
     @apply hover:scale-105 active:scale-95;
   }
 
-  .btn-glow-red-outlined {
-    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200;
-    @apply border border-neon-red bg-transparent text-neon-red;
-    @apply hover:bg-neon-red/10 hover:shadow-glow-red;
+  .btn-glow-primary-outlined {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200;
+    @apply border border-brand-primary bg-transparent text-brand-primary-light;
+    @apply hover:bg-brand-primary/10 hover:shadow-glow-primary;
     @apply hover:scale-105 active:scale-95;
+  }
+
+  /* Kept for backwards compatibility - alias to primary */
+  .btn-glow-red {
+    @apply btn-glow-primary;
+  }
+
+  .btn-glow-red-outlined {
+    @apply btn-glow-primary-outlined;
   }
 
   /* Secondary Button */
   .btn-secondary {
-    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-200;
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200;
     @apply bg-white/5 hover:bg-white/10 text-white border border-white/10;
     @apply hover:scale-105 active:scale-95;
   }
@@ -87,7 +100,7 @@ body {
     @apply w-full px-4 py-3 rounded-lg;
     @apply bg-neutral-900 border border-neutral-800 text-white;
     @apply placeholder-neutral-500;
-    @apply focus:outline-none focus:border-neon-red focus:ring-1 focus:ring-neon-red/50;
+    @apply focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/50;
     @apply transition-all duration-200;
   }
 
@@ -113,12 +126,12 @@ body {
 /* ============================================================================
    UTILITY CLASSES
    ============================================================================ */
-.glow-red {
-  box-shadow: 0 0 20px rgba(255, 30, 30, 0.5);
+.glow-primary {
+  box-shadow: 0 0 20px var(--brand-primary);
 }
 
-.glow-red-lg {
-  box-shadow: 0 0 30px rgba(255, 30, 30, 0.6);
+.glow-primary-lg {
+  box-shadow: 0 0 30px var(--brand-primary);
 }
 
 .glow-emerald {
@@ -126,7 +139,7 @@ body {
 }
 
 .glow-blue {
-  box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+  box-shadow: 0 0 20px var(--brand-primary);
 }
 
 .backdrop-dark {
@@ -146,10 +159,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 30, 30, 0.3);
+  background: var(--brand-primary);
+  opacity: 0.3;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 30, 30, 0.5);
+  background: var(--brand-primary);
+  opacity: 0.5;
 }

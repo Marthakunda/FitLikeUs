@@ -4,12 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginSchema, LoginInput } from '@fitlikeus/shared';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../services/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
@@ -17,7 +16,7 @@ export default function LoginPage() {
     });
 
     const mutation = useMutation({
-        mutationFn: (data: LoginInput) => isLogin ? authService.login(data) : authService.register(data),
+        mutationFn: (data: LoginInput) => authService.login(data),
         onSuccess: (profile) => {
             // Role-based redirects
             if (profile.role === 'admin') {
@@ -29,7 +28,7 @@ export default function LoginPage() {
             }
         },
         onError: (err: Error) => {
-            setError(err.message || `Failed to ${isLogin ? 'sign in' : 'register'}`);
+            setError(err.message || 'Failed to sign in');
         }
     });
 
@@ -39,12 +38,12 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A] text-white p-4 overflow-hidden relative">
+        <div className="min-h-screen flex items-center justify-center bg-dark-bg text-white p-4 overflow-hidden relative">
             {/* Animated Background Gradients */}
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(0,100,255,0.08),transparent)]" />
-                <div className="absolute top-[-20%] right-[-20%] w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-glow-pulse" />
-                <div className="absolute bottom-[-20%] left-[-20%] w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-glow-pulse" />
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(37,99,235,0.08),transparent)]" />
+                <div className="absolute top-[-20%] right-[-20%] w-96 h-96 bg-brand-primary/20 rounded-full blur-3xl animate-glow-pulse" />
+                <div className="absolute bottom-[-20%] left-[-20%] w-96 h-96 bg-brand-accent/20 rounded-full blur-3xl animate-glow-pulse" />
             </div>
 
             <motion.div 
@@ -55,16 +54,16 @@ export default function LoginPage() {
             >
                 <div className="text-center space-y-2">
                     <motion.h2 
-                        key={isLogin ? 'login' : 'signup'}
+                        key="login"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="text-4xl font-black text-gradient bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-400"
+                        className="text-4xl font-bold text-white"
                     >
-                        {isLogin ? 'FitLikeUs' : 'Join FitLikeUs'}
+                        FitLikeUs
                     </motion.h2>
-                    <p className="text-neutral-300 text-sm">
-                        {isLogin ? 'Welcome back to your fitness journey' : 'Start your holistic fitness journey'}
+                    <p className="text-slate-400 text-sm">
+                        Welcome back to your fitness journey
                     </p>
                 </div>
 
@@ -76,7 +75,7 @@ export default function LoginPage() {
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="bg-neon-red/10 border border-neon-red/50 text-neon-red/80 p-3 rounded-xl text-sm"
+                                className="bg-brand-warning/10 border border-brand-warning/50 text-brand-warning/90 p-3 rounded-lg text-sm"
                             >
                                 {error}
                             </motion.div>
@@ -85,7 +84,7 @@ export default function LoginPage() {
 
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="login-email" className="block text-sm font-medium text-neutral-300 mb-2">Email Address</label>
+                            <label htmlFor="login-email" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
                             <input
                                 id="login-email"
                                 {...register('email')}
@@ -94,47 +93,54 @@ export default function LoginPage() {
                                 className="input-field"
                                 placeholder="name@example.com"
                             />
-                            {errors.email && <p className="text-neon-red text-xs mt-1.5">{errors.email.message}</p>}
+                            {errors.email && <p className="text-brand-warning text-xs mt-1.5">{errors.email.message}</p>}
                         </div>
 
                         <div>
-                            <label htmlFor="login-password" className="block text-sm font-medium text-neutral-300 mb-2">Password</label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label htmlFor="login-password" className="block text-sm font-medium text-slate-300">Password</label>
+                                <Link 
+                                    to="/forgot-password"
+                                    className="text-xs text-brand-primary hover:text-brand-primary-light transition-colors"
+                                >
+                                    Forgot password?
+                                </Link>
+                            </div>
                             <input
                                 id="login-password"
                                 {...register('password')}
                                 type="password"
                                 disabled={mutation.isPending}
                                 className="input-field"
-                                placeholder="••••••••"
+                                placeholder="Your password"
                             />
-                            {errors.password && <p className="text-neon-red text-xs mt-1.5">{errors.password.message}</p>}
+                            {errors.password && <p className="text-brand-warning text-xs mt-1.5">{errors.password.message}</p>}
                         </div>
                     </div>
 
+                    {/* Submit Button */}
                     <motion.button
                         type="submit"
                         disabled={mutation.isPending}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="btn-glow-red w-full flex items-center justify-center gap-2"
+                        className="btn-glow-primary w-full"
                     >
                         {mutation.isPending ? (
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
                         ) : (
-                            isLogin ? 'Sign In' : 'Create Account'
+                            'Sign In'
                         )}
                     </motion.button>
 
+                    {/* Sign Up Link */}
                     <div className="text-center pt-4 border-t border-white/5">
-                        <button
-                            type="button"
-                            onClick={() => setIsLogin(!isLogin)}
-                            disabled={mutation.isPending}
-                            className="text-sm text-neutral-400 hover:text-white transition-colors duration-200"
-                        >
-                            {isLogin ? "Don't have an account? " : "Already have an account? "}
-                            <span className="text-glow-blue font-semibold">{isLogin ? 'Sign Up' : 'Log In'}</span>
-                        </button>
+                        <p className="text-sm text-slate-400">
+                            Don't have an account?{' '}
+                            <Link to="/signup" className="text-brand-primary font-semibold hover:text-brand-primary-light transition-colors">
+                                Sign Up
+                            </Link>
+                        </p>
                     </div>
                 </form>
             </motion.div>

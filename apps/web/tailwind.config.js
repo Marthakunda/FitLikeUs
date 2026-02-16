@@ -7,22 +7,31 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Dark futuristic black
+                // Modern dark theme palette
                 'dark': {
-                    'bg': '#0A0A0A',
-                    'card': '#121212',
-                    'border': '#1E1E1E',
+                    'bg': '#0F1419',
+                    'card': '#1A202D',
+                    'border': '#2D3748',
                 },
-                // Red glowing accent
-                'neon': {
-                    'red': '#FF1E1E',
-                    'red-dark': '#CC1818',
-                    'red-light': '#FF4444',
+                // Modern brand colors - Primary: Navy/Slate Blue
+                'brand': {
+                    'primary': '#2563EB',      // Bright Blue
+                    'primary-dark': '#1E40AF',
+                    'primary-light': '#3B82F6',
+                    'secondary': '#64748B',    // Slate Gray
+                    'accent': '#10B981',       // Mint Green (subtle success)
+                    'warning': '#F59E0B',      // Warm Amber (soft warning)
                 },
-                // Additional neon colors
+                // Supporting colors
+                'neutral': {
+                    'text': '#F1F5F9',
+                    'text-muted': '#CBD5E1',
+                    'bg-hover': '#334155',
+                },
+                // Gradient colors
                 'glow': {
                     'emerald': '#10B981',
-                    'blue': '#0EA5E9',
+                    'blue': '#2563EB',
                     'cyan': '#06B6D4',
                     'yellow': '#FBBF24',
                 },
@@ -82,11 +91,11 @@ export default {
                 },
             },
             boxShadow: {
-                // Red glowing shadows for buttons and interactive elements
-                'glow-red': '0 0 20px rgba(255, 30, 30, 0.5)',
-                'glow-red-lg': '0 0 30px rgba(255, 30, 30, 0.6)',
+                // Modern glow shadows using brand colors
+                'glow-primary': '0 0 20px rgba(37, 99, 235, 0.3)',
+                'glow-primary-lg': '0 0 30px rgba(37, 99, 235, 0.4)',
                 'glow-emerald': '0 0 20px rgba(16, 185, 129, 0.3)',
-                'glow-blue': '0 0 20px rgba(14, 165, 233, 0.3)',
+                'glow-blue': '0 0 20px rgba(37, 99, 235, 0.3)',
                 'glow-cyan': '0 0 20px rgba(6, 182, 212, 0.3)',
             },
             transitionDuration: {
